@@ -4,9 +4,9 @@ Aplicativo mobile desenvolvido em React Native para a Global Solution - FIAP 202
 
 ## Integrantes do Grupo
 
-- [Nome do Integrante 1] - RM XXXXX
-- [Nome do Integrante 2] - RM XXXXX
-- [Nome do Integrante 3] - RM XXXXX
+- [Alice Teixeira Caldeira] - RM 556293
+- [Leonardo Cadena de Souza] - RM 557528
+- [Gustavo Goulart Bretas] - RM 555708
 
 ## Vídeo de Apresentação
 
@@ -283,3 +283,4 @@ Para dúvidas sobre o projeto, entre em contato com os integrantes do grupo.
 ---
 
 Desenvolvido para a Global Solution - FIAP 2024
+
