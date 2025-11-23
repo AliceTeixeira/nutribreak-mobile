@@ -1,38 +1,31 @@
 export const API_CONFIG = {
-  baseURL: 'http://localhost:8080/api',
-  timeout: 10000,
+  baseURL: 'https://nutribreak-api-16762.azurewebsites.net',
+  timeout: 30000,
   headers: {
     'Content-Type': 'application/json',
   },
 };
 
 export const ENDPOINTS = {
-  auth: {
-    login: '/auth/login',
-    signup: '/auth/signup',
-    logout: '/auth/logout',
+  users: {
+    list: '/api/v1/users',
+    create: '/api/v1/users',
+    get: (id: string) => `/api/v1/users/${id}`,
+    update: (id: string) => `/api/v1/users/${id}`,
+    delete: (id: string) => `/api/v1/users/${id}`,
   },
-  user: {
-    profile: '/user/profile',
-    update: '/user/update',
+  breakRecords: {
+    list: '/api/v1/break-records',
+    create: '/api/v1/break-records',
+    get: (id: string) => `/api/v1/break-records/${id}`,
+    update: (id: string) => `/api/v1/break-records/${id}`,
+    delete: (id: string) => `/api/v1/break-records/${id}`,
   },
-  mood: {
-    list: '/mood',
-    create: '/mood',
-    update: '/mood',
-    delete: '/mood',
-  },
-  recommendations: {
-    list: '/recommendations',
-    generate: '/recommendations/generate',
-  },
-  breaks: {
-    list: '/breaks',
-    create: '/breaks',
-    complete: '/breaks/complete',
-  },
-  settings: {
-    get: '/settings',
-    update: '/settings',
+  meals: {
+    list: '/api/v1/meals',
+    create: '/api/v1/meals',
+    get: (id: string) => `/api/v1/meals/${id}`,
+    update: (id: string) => `/api/v1/meals/${id}`,
+    delete: (id: string) => `/api/v1/meals/${id}`,
   },
 };

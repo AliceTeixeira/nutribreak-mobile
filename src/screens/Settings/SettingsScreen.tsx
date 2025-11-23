@@ -30,8 +30,9 @@ export default function Settings() {
     try {
       const data = await settingsService.getSettings();
       setSettings(data);
-    } catch (error) {
-      console.error('Error loading settings:', error);
+    } catch (error: any) {
+      if (error.message && !error.message.includes('autenticado')) {
+      }
       setSettings({
         userId: user?.id || '',
         notificationsEnabled: true,
@@ -55,7 +56,6 @@ export default function Settings() {
     try {
       await settingsService.updateSettings(updates);
     } catch (error) {
-      console.error('Error updating settings:', error);
     }
   };
 
@@ -89,7 +89,7 @@ export default function Settings() {
               <Text style={styles.profileName}>{user?.name}</Text>
               <Text style={styles.profileEmail}>{user?.email}</Text>
               <Text style={styles.profileType}>
-                Trabalho: {user?.workType === 'remote' ? 'Remoto' : user?.workType === 'hybrid' ? 'Híbrido' : 'Presencial'}
+                Trabalho: {user?.workMode === 'Remoto' ? 'Remoto' : user?.workMode === 'Híbrido' ? 'Híbrido' : user?.workMode === 'Presencial' ? 'Presencial' : user?.workMode || 'Não informado'}
               </Text>
             </View>
           </View>

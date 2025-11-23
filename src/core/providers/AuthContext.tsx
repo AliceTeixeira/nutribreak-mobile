@@ -31,12 +31,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   async function loadStoredUser() {
     try {
       const storedUser = await authService.getStoredUser();
-      const isAuth = await authService.isAuthenticated();
-      if (storedUser && isAuth) {
+      if (storedUser && storedUser.id) {
         setUser(storedUser);
+      } else {
+        await authService.logout();
+        setUser(null);
       }
     } catch (error) {
-      console.error('Error loading user:', error);
+      await authService.logout();
+      setUser(null);
     } finally {
       setLoading(false);
     }
@@ -63,10 +66,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const response = await authService.signup(
         name,
         email,
-        password,
-        workType,
-        dietaryPreferences,
-        wellnessGoals
+        workType
       );
       setUser(response.user);
     } catch (error) {
@@ -79,7 +79,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       await authService.logout();
       setUser(null);
     } catch (error) {
-      console.error('Error signing out:', error);
     }
   }
 
@@ -91,7 +90,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         signIn,
         signUp,
         signOut,
-        isAuthenticated: !!user,
+        isAuthenticated: !!(user && user.id),
       }}
     >
       {children}

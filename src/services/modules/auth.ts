@@ -3,124 +3,117 @@ import { api } from '../api/client';
 import { ENDPOINTS } from '../api/config';
 import { AuthResponse, User } from '../../types';
 
-const USE_MOCK = true;
-
-const MOCK_USERS = [
-  {
-    email: 'teste@fiap.com',
-    password: '123456',
-    user: {
-      id: '1',
-      name: 'Usuário Teste',
-      email: 'teste@fiap.com',
-      workType: 'remote' as const,
-      dietaryPreferences: ['vegetariano'],
-      wellnessGoals: ['Melhorar bem-estar', 'Aumentar produtividade'],
-      createdAt: new Date().toISOString(),
-    },
-  },
-  {
-    email: 'admin@fiap.com',
-    password: 'admin',
-    user: {
-      id: '2',
-      name: 'Administrador',
-      email: 'admin@fiap.com',
-      workType: 'hybrid' as const,
-      dietaryPreferences: [],
-      wellnessGoals: ['Reduzir estresse'],
-      createdAt: new Date().toISOString(),
-    },
-  },
-];
+const USE_MOCK = false;
 
 export const authService = {
   async login(email: string, password: string): Promise<AuthResponse> {
     if (USE_MOCK) {
       await new Promise((resolve) => setTimeout(resolve, 1000));
+      const mockUser: User = {
+        id: '1',
+        name: 'Usuário Teste',
+        email: 'teste@fiap.com',
+        workMode: 'remote',
+      };
+      const response: AuthResponse = {
+        token: 'mock-token-' + Date.now(),
+        user: mockUser,
+      };
+      await AsyncStorage.setItem('authToken', response.token || '');
+      await AsyncStorage.setItem('user', JSON.stringify(response.user));
+      return response;
+    }
 
-      const mockUser = MOCK_USERS.find(
-        (u) => u.email === email && u.password === password
-      );
-
-      if (!mockUser) {
+    try {
+      const usersResponse = await api.get<User[] | { data?: User[]; items?: User[] }>(ENDPOINTS.users.list);
+      const users = Array.isArray(usersResponse) 
+        ? usersResponse 
+        : (usersResponse as any).data || (usersResponse as any).items || [];
+      
+      const user = users.find((u: User) => u.email === email);
+      
+      if (!user) {
         throw new Error('Email ou senha inválidos');
       }
 
       const response: AuthResponse = {
-        token: 'mock-token-' + Date.now(),
-        user: mockUser.user,
+        user,
       };
 
-      await AsyncStorage.setItem('authToken', response.token);
+      await AsyncStorage.setItem('authToken', response.token || '');
       await AsyncStorage.setItem('user', JSON.stringify(response.user));
 
       return response;
+    } catch (error: any) {
+      if (error.message) {
+        throw error;
+      }
+      throw new Error('Erro ao fazer login. Tente novamente.');
     }
-
-    const response = await api.post<AuthResponse>(ENDPOINTS.auth.login, {
-      email,
-      password,
-    });
-
-    await AsyncStorage.setItem('authToken', response.token);
-    await AsyncStorage.setItem('user', JSON.stringify(response.user));
-
-    return response;
   },
 
   async signup(
     name: string,
     email: string,
-    password: string,
-    workType: string,
-    dietaryPreferences: string[],
-    wellnessGoals: string[]
+    workMode: string
   ): Promise<AuthResponse> {
     if (USE_MOCK) {
       await new Promise((resolve) => setTimeout(resolve, 1000));
-
       const newUser: User = {
         id: String(Date.now()),
         name,
         email,
-        workType: workType as any,
-        dietaryPreferences,
-        wellnessGoals,
-        createdAt: new Date().toISOString(),
+        workMode,
       };
-
       const response: AuthResponse = {
         token: 'mock-token-' + Date.now(),
         user: newUser,
       };
-
-      await AsyncStorage.setItem('authToken', response.token);
+      await AsyncStorage.setItem('authToken', response.token || '');
       await AsyncStorage.setItem('user', JSON.stringify(response.user));
-
       return response;
     }
 
-    const response = await api.post<AuthResponse>(ENDPOINTS.auth.signup, {
+    const workModeMap: Record<string, string> = {
+      'remote': 'Remoto',
+      'hybrid': 'Híbrido',
+      'onsite': 'Presencial',
+    };
+
+    const userData = {
       name,
       email,
-      password,
-      workType,
-      dietaryPreferences,
-      wellnessGoals,
-    });
+      workMode: workModeMap[workMode] || workMode,
+    };
 
-    await AsyncStorage.setItem('authToken', response.token);
-    await AsyncStorage.setItem('user', JSON.stringify(response.user));
+    try {
+      const createResponse = await api.post<{ id: string }>(ENDPOINTS.users.create, userData);
+      
+      if (!createResponse.id) {
+        throw new Error('Erro ao criar usuário: ID não retornado');
+      }
 
-    return response;
+      const user = await this.getUserById(createResponse.id);
+
+      const response: AuthResponse = {
+        user,
+      };
+
+      await AsyncStorage.setItem('authToken', response.token || '');
+      await AsyncStorage.setItem('user', JSON.stringify(response.user));
+
+      return response;
+    } catch (error: any) {
+      if (error.message) {
+        throw error;
+      }
+      throw new Error('Erro ao criar conta. Tente novamente.');
+    }
   },
 
   async logout(): Promise<void> {
     try {
-      await api.post(ENDPOINTS.auth.logout);
     } catch (error) {
-      console.error('Logout API error:', error);
     } finally {
       await AsyncStorage.removeItem('authToken');
       await AsyncStorage.removeItem('user');
@@ -137,7 +130,15 @@ export const authService = {
   },
 
   async isAuthenticated(): Promise<boolean> {
-    const token = await this.getStoredToken();
-    return !!token;
+    const user = await this.getStoredUser();
+    return !!(user && user.id);
+  },
+
+  async getUserById(id: string): Promise<User> {
+    return await api.get<User>(ENDPOINTS.users.get(id));
+  },
+
+  async updateUser(id: string, data: Partial<User>): Promise<User> {
+    return await api.put<User>(ENDPOINTS.users.update(id), data);
   },
 };

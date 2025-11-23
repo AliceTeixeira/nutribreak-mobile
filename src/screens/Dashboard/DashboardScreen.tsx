@@ -27,21 +27,28 @@ export default function Dashboard() {
 
   const loadDashboardData = async () => {
     try {
+      if (!user || !user.id) {
+        throw new Error('Usuário não autenticado');
+      }
+
       const [moods, breaks] = await Promise.all([
         moodService.getAllMoods(),
         breakService.getAllBreaks(),
       ]);
 
       const today = new Date().toISOString().split('T')[0];
-      const todayMoodEntry = moods.find((m) => m.date.startsWith(today));
+      const todayMoodEntry = moods.find((m) => m.date && m.date.startsWith(today));
       setTodayMood(todayMoodEntry || null);
 
       const upcoming = breaks
         .filter((b) => !b.completedAt && !b.skipped)
         .slice(0, 3);
       setUpcomingBreaks(upcoming);
-    } catch (error) {
-      console.error('Error loading dashboard:', error);
+    } catch (error: any) {
+      if (error.message !== 'Usuário não autenticado') {
+      }
+      setTodayMood(null);
+      setUpcomingBreaks([]);
     } finally {
       setLoading(false);
       setRefreshing(false);

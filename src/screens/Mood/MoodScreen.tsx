@@ -38,8 +38,10 @@ export default function Mood() {
     try {
       const data = await moodService.getAllMoods();
       setMoodEntries(data);
-    } catch (error) {
-      console.error('Error loading moods:', error);
+    } catch (error: any) {
+      if (error.message && !error.message.includes('autenticado')) {
+      }
+      setMoodEntries([]);
     } finally {
       setLoading(false);
       setRefreshing(false);

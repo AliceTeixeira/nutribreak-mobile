@@ -18,7 +18,6 @@ import { COLORS } from './styles';
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
 
-// Stack de Autenticação
 function AuthStack() {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
@@ -28,7 +27,6 @@ function AuthStack() {
   );
 }
 
-// Tabs Principais
 function MainTabs() {
   return (
     <Tab.Navigator
@@ -86,7 +84,6 @@ function MainTabs() {
   );
 }
 
-// Navegação Principal
 function RootNavigator() {
   const { isAuthenticated, loading } = useAuth();
 
@@ -105,11 +102,13 @@ function RootNavigator() {
   );
 }
 
-// App Principal
 export default function App() {
   return (
     <AuthProvider>
-      <NavigationContainer>
+      <NavigationContainer
+        onReady={() => {
+        }}
+      >
         <RootNavigator />
       </NavigationContainer>
     </AuthProvider>

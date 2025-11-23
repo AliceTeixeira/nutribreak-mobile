@@ -1,26 +1,40 @@
-import { api } from '../api/client';
-import { ENDPOINTS } from '../api/config';
 import { Settings } from '../../types';
 import { mockSettings } from '../api/mockData';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const USE_MOCK = true;
-let currentSettings = { ...mockSettings };
+const SETTINGS_STORAGE_KEY = '@nutribreak:settings';
+
+const getStoredSettings = async (): Promise<Settings> => {
+  try {
+    const stored = await AsyncStorage.getItem(SETTINGS_STORAGE_KEY);
+    if (stored) {
+      return JSON.parse(stored);
+    }
+    return { ...mockSettings };
+  } catch {
+    return { ...mockSettings };
+  }
+};
+
+const saveSettings = async (settings: Settings): Promise<void> => {
+  try {
+    await AsyncStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(settings));
+  } catch (error) {
+  }
+};
 
 export const settingsService = {
   async getSettings(): Promise<Settings> {
-    if (USE_MOCK) {
-      await new Promise((resolve) => setTimeout(resolve, 500));
-      return { ...currentSettings };
-    }
-    return await api.get<Settings>(ENDPOINTS.settings.get);
+    await new Promise((resolve) => setTimeout(resolve, 500));
+    return await getStoredSettings();
   },
 
   async updateSettings(data: Partial<Settings>): Promise<Settings> {
-    if (USE_MOCK) {
-      await new Promise((resolve) => setTimeout(resolve, 500));
-      currentSettings = { ...currentSettings, ...data };
-      return { ...currentSettings };
-    }
-    return await api.put<Settings>(ENDPOINTS.settings.update, data);
+    await new Promise((resolve) => setTimeout(resolve, 500));
+    const currentSettings = await getStoredSettings();
+    const updatedSettings = { ...currentSettings, ...data };
+    await saveSettings(updatedSettings);
+    return updatedSettings;
   },
 };

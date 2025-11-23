@@ -1,16 +1,31 @@
 export interface User {
-  id: string;
+  id?: string;
   name: string;
   email: string;
-  workType: 'remote' | 'hybrid' | 'onsite';
-  dietaryPreferences: string[];
-  wellnessGoals: string[];
-  createdAt: string;
+  workMode?: string;
 }
 
 export interface AuthResponse {
-  token: string;
+  token?: string;
   user: User;
+}
+
+export interface BreakRecord {
+  id?: string;
+  userId: string;
+  durationMinutes: number;
+  type?: string;
+  mood?: string;
+  energyLevel: number;
+  screenTimeMinutes: number;
+}
+
+export interface Meal {
+  id?: string;
+  userId: string;
+  title?: string;
+  calories: number;
+  timeOfDay?: string;
 }
 
 export interface MoodEntry {

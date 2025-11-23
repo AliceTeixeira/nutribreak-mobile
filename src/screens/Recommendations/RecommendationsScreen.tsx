@@ -27,8 +27,10 @@ export default function Recommendations() {
     try {
       const data = await recommendationService.getRecommendations();
       setRecommendations(data);
-    } catch (error) {
-      console.error('Error loading recommendations:', error);
+    } catch (error: any) {
+      if (error.message && !error.message.includes('autenticado')) {
+      }
+      setRecommendations([]);
     } finally {
       setLoading(false);
       setRefreshing(false);

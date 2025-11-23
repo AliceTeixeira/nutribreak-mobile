@@ -27,8 +27,10 @@ export default function Breaks() {
     try {
       const data = await breakService.getAllBreaks();
       setBreaks(data);
-    } catch (error) {
-      console.error('Error loading breaks:', error);
+    } catch (error: any) {
+      if (error.message && !error.message.includes('autenticado')) {
+      }
+      setBreaks([]);
     } finally {
       setLoading(false);
       setRefreshing(false);
